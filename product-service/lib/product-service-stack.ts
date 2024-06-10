@@ -72,7 +72,8 @@ export class ProductServiceStack extends cdk.Stack {
 
 
     const api = new apigw.LambdaRestApi(this, 'ProductServiceApi', {
-      handler: getProductsListLambda
+      handler: getProductsListLambda,
+      proxy: false
     });
 
     const productsResource = api.root.addResource('products');
