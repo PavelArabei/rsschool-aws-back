@@ -70,14 +70,29 @@ export class ProductServiceStack extends cdk.Stack {
       },
     );
 
+    const getProductByIdLambda = new lambda.Function(this, 'GetProductByIdHandler', {
+      runtime: lambda.Runtime.NODEJS_20_X,
+      code: lambda.Code.fromAsset('lambda'),
+      handler: 'getProductsById.handler',
+      environment: {
+        PRODUCTS: JSON.stringify(mockProducts),
+      }
+    });
+
 
     const api = new apigw.LambdaRestApi(this, 'ProductServiceApi', {
       handler: getProductsListLambda,
-      proxy: false
+      restApiName: 'ProductService',
+      proxy: false,
     });
 
     const productsResource = api.root.addResource('products');
     productsResource.addMethod('GET', new apigw.LambdaIntegration(getProductsListLambda))
+
+    const productResource = productsResource.addResource('{productId}');
+    productResource.addMethod('GET', new apigw.LambdaIntegration(getProductByIdLambda))
+
+
 
   }
 }
