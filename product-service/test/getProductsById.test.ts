@@ -1,4 +1,4 @@
-import {handler} from '../lambda/getProductsById'; // Путь к вашему обработчику
+import {handler} from '../lambda/getProductsById';
 import {APIGatewayProxyEvent} from 'aws-lambda';
 import {Products} from "../types/products";
 

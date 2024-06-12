@@ -81,10 +81,13 @@ export class ProductServiceStack extends cdk.Stack {
         });
 
 
-        const api = new apigw.LambdaRestApi(this, 'ProductServiceApi', {
-            handler: getProductsListLambda,
+        const api = new apigw.RestApi(this, 'ProductServiceApi', {
             restApiName: 'ProductService',
-            proxy: false,
+            defaultCorsPreflightOptions: {
+                allowOrigins: apigw.Cors.ALL_ORIGINS,
+                allowMethods: apigw.Cors.ALL_METHODS,
+                allowHeaders: apigw.Cors.DEFAULT_HEADERS
+            }
         });
 
         const productsResource = api.root.addResource('products');
