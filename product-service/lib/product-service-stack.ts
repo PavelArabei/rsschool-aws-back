@@ -73,7 +73,7 @@ export class ProductServiceStack extends cdk.Stack {
                 // removalPolicy: cdk.RemovalPolicy.DESTROY
             });
 
-        const stocksTable = dynamodb.Table.fromTableName(this, 'ImportedStocksTable', stocksTableName) ||
+        const stockTable = dynamodb.Table.fromTableName(this, 'ImportedStocksTable', stocksTableName) ||
             new dynamodb.Table(this, 'StocksTable', {
                 partitionKey: {name: 'product_id', type: dynamodb.AttributeType.STRING},
                 sortKey: {name: 'count', type: dynamodb.AttributeType.NUMBER},
@@ -82,23 +82,25 @@ export class ProductServiceStack extends cdk.Stack {
             });
 
 
+        const lambdasEnvironment = {
+            PRODUCTS_TABLE: productsTable.tableName,
+            STOCK_TABLE: stockTable.tableName
+        }
+
         const getProductsListLambda = new lambda.Function(this, 'GetProductsListHandler', {
                 runtime: lambda.Runtime.NODEJS_20_X,
                 code: lambda.Code.fromAsset('lambda'),
                 handler: 'getProductsList.handler',
-                environment: {
-                    PRODUCTS: JSON.stringify(mockProducts),
-                }
+                environment: lambdasEnvironment
             },
         );
+
 
         const getProductByIdLambda = new lambda.Function(this, 'GetProductByIdHandler', {
             runtime: lambda.Runtime.NODEJS_20_X,
             code: lambda.Code.fromAsset('lambda'),
             handler: 'getProductsById.handler',
-            environment: {
-                PRODUCTS: JSON.stringify(mockProducts),
-            }
+            environment: lambdasEnvironment
         });
 
 
