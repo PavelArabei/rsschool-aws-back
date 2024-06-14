@@ -3,9 +3,10 @@ import {DynamoDB} from 'aws-sdk';
 
 import {buildResponse, failure, success} from "./helpers/response";
 
+const AWS = require('aws-sdk');
 
 const {PRODUCTS_TABLE, STOCK_TABLE} = process.env
-const dynamoDb = new DynamoDB.DocumentClient();
+const dynamoDb: DynamoDB.DocumentClient = new AWS.DynamoDB.DocumentClient();
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
 
