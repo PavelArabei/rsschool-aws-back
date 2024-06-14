@@ -34,6 +34,7 @@ export class ProductServiceStack extends cdk.Stack {
             STOCK_TABLE: stockTable.tableName
         }
 
+
         const getProductsListLambda = new lambda.Function(this, 'GetProductsListHandler', {
                 runtime: lambda.Runtime.NODEJS_16_X,
                 code: lambda.Code.fromAsset('lambda'),
@@ -47,6 +48,13 @@ export class ProductServiceStack extends cdk.Stack {
             runtime: lambda.Runtime.NODEJS_16_X,
             code: lambda.Code.fromAsset('lambda'),
             handler: 'getProductsById.handler',
+            environment: lambdasEnvironment
+        });
+
+        const createProductLambda = new lambda.Function(this, 'CreateProductHandler', {
+            runtime: lambda.Runtime.NODEJS_16_X,
+            code: lambda.Code.fromAsset('lambda'),
+            handler: 'createProduct.handler',
             environment: lambdasEnvironment
         });
 
@@ -64,13 +72,15 @@ export class ProductServiceStack extends cdk.Stack {
         [productsTable, stockTable].forEach(table => {
             table.grantReadData(getProductsListLambda)
             table.grantReadData(getProductByIdLambda)
+            table.grantWriteData(createProductLambda)
         })
 
-        const productsResource = api.root.addResource('products');
-        productsResource.addMethod('GET', new apigw.LambdaIntegration(getProductsListLambda))
+        const productsResources = api.root.addResource('products');
+        productsResources.addMethod('GET', new apigw.LambdaIntegration(getProductsListLambda))
+        productsResources.addMethod('POST', new apigw.LambdaIntegration(createProductLambda))
 
-        const productResource = productsResource.addResource('{productId}');
-        productResource.addMethod('GET', new apigw.LambdaIntegration(getProductByIdLambda))
+        const productResourceGet = productsResources.addResource('{productId}');
+        productResourceGet.addMethod('GET', new apigw.LambdaIntegration(getProductByIdLambda))
 
 
     }
