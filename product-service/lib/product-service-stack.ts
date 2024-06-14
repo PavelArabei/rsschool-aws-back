@@ -113,6 +113,12 @@ export class ProductServiceStack extends cdk.Stack {
             }
         });
 
+
+        [productsTable, stockTable].forEach(table => {
+            table.grantReadData(getProductsListLambda)
+            table.grantReadData(getProductByIdLambda)
+        })
+
         const productsResource = api.root.addResource('products');
         productsResource.addMethod('GET', new apigw.LambdaIntegration(getProductsListLambda))
 
