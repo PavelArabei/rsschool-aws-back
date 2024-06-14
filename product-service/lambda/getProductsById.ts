@@ -1,18 +1,53 @@
 import {APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult} from 'aws-lambda';
-import {Products} from "../types/products";
-import {buildResponse, success} from "./helpers/response";
+import {DynamoDB} from 'aws-sdk';
 
+import {buildResponse, failure, success} from "./helpers/response";
+
+
+const {PRODUCTS_TABLE, STOCK_TABLE} = process.env
+const dynamoDb = new DynamoDB.DocumentClient();
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const productId = event.pathParameters?.productId;
+    console.log('productId', productId)
+
     if (!productId) {
         return buildResponse(400, {message: "Product ID is required"})
     }
 
-    const products: Products[] = JSON.parse(process.env.PRODUCTS || '[]');
-    const product = products.find(p => p.id === productId);
+    const paramsForProducts = {
+        TableName: PRODUCTS_TABLE!,
+        Key: {
+            id: productId
+        }
+    }
 
-    if (product) return success(product)
+    const paramsForStocks = {
+        TableName: STOCK_TABLE!,
+        Key: {
+            product_id: productId
+        }
+    }
 
-    return buildResponse(404, {message: "Product not found"})
+    try {
+
+        const product = await dynamoDb.get(paramsForProducts).promise();
+        const stock = await dynamoDb.get(paramsForStocks).promise();
+
+        if (!product || !stock) {
+            console.error('Product or stocks not found');
+            return buildResponse(404, {message: "Product or stock not found"})
+        }
+
+        const productWithStock = {
+            ...product.Item,
+            count: stock.Item?.count || 0
+        }
+        return success(productWithStock)
+
+    } catch (error) {
+
+        console.error('Error retrieving product:', error);
+        return failure({error: 'Failed to retrieve product'})
+    }
 
 };
