@@ -18,31 +18,36 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
     const paramsForProducts = {
         TableName: PRODUCTS_TABLE!,
-        Key: {
-            id: productId
-        }
+        KeyConditionExpression: 'id = :id',
+        ExpressionAttributeValues: {
+            ':id': productId,
+        },
     }
 
     const paramsForStocks = {
         TableName: STOCK_TABLE!,
-        Key: {
-            product_id: productId
-        }
+        KeyConditionExpression: 'product_id = :product_id',
+        ExpressionAttributeValues: {
+            ':product_id': productId,
+        },
     }
 
     try {
 
-        const product = await dynamoDb.get(paramsForProducts).promise();
-        const stock = await dynamoDb.get(paramsForStocks).promise();
+        const productResult = await dynamoDb.query(paramsForProducts).promise();
+        const stockResult = await dynamoDb.query(paramsForStocks).promise();
 
-        if (!product || !stock) {
+        if (!productResult.Items?.length || !stockResult.Items?.length) {
             console.error('Product or stocks not found');
             return buildResponse(404, {message: "Product or stock not found"})
         }
 
+        const product = productResult.Items[0];
+        const stock = stockResult.Items[0];
+
         const productWithStock = {
-            ...product.Item,
-            count: stock.Item?.count || 0
+            ...product,
+            count: stock.count
         }
         return success(productWithStock)
 
