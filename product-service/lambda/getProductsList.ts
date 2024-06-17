@@ -12,10 +12,13 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
     console.log('pathParameters', event.pathParameters)
     try {
-        const productsResult = await dynamoDb.scan({TableName: PRODUCTS_TABLE!}).promise();
-        const products = productsResult.Items;
 
-        const stocksResult = await dynamoDb.scan({TableName: STOCK_TABLE!}).promise();
+        const [productsResult, stocksResult] = await Promise.all([
+            dynamoDb.scan({TableName: PRODUCTS_TABLE!}).promise(),
+            dynamoDb.scan({TableName: STOCK_TABLE!}).promise()
+        ])
+
+        const products = productsResult.Items;
         const stocks = stocksResult.Items;
 
         if (!products || !stocks) {

@@ -33,9 +33,10 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     }
 
     try {
-
-        const productResult = await dynamoDb.query(paramsForProducts).promise();
-        const stockResult = await dynamoDb.query(paramsForStocks).promise();
+        const [productResult, stockResult] = await Promise.all([
+            dynamoDb.query(paramsForProducts).promise(),
+            dynamoDb.query(paramsForStocks).promise()
+        ]);
 
         if (!productResult.Items?.length || !stockResult.Items?.length) {
             console.error('Product or stocks not found');
@@ -51,10 +52,8 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         }
         return success(productWithStock)
 
-    } catch (error) {
-
+    } catch (error: any) {
         console.error('Error retrieving product:', error);
-        return failure({error: 'Failed to retrieve product'})
+        return failure({error: 'Failed to retrieve product: ' + error.message})
     }
-
 };
