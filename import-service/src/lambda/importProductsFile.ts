@@ -1,7 +1,7 @@
 import {APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult} from 'aws-lambda';
 
 import * as AWS from "aws-sdk";
-import {buildResponse} from "./helpers/response";
+import {buildResponse, failure, success} from "./helpers/response";
 
 const s3 = new AWS.S3();
 
@@ -10,7 +10,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     const name = event.queryStringParameters?.name;
 
     if (!name) {
-        return buildResponse(400, {message: "Name parameter is required"}, ['POST'])
+        return buildResponse(400, {message: "Name parameter is required"})
     }
 
     const params = {
@@ -21,15 +21,13 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     };
 
     try {
+
         const signedUrl = s3.getSignedUrl('putObject', params);
-        return {
-            statusCode: 200,
-            body: JSON.stringify({url: signedUrl}),
-        };
+        return success({url: signedUrl})
+
     } catch (error) {
-        return {
-            statusCode: 500,
-            body: JSON.stringify({message: 'Could not create signed URL', error}),
-        };
+
+        return failure({message: 'Could not create signed URL', error})
+
     }
 };
