@@ -1,16 +1,31 @@
 import * as cdk from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import {Construct} from 'constructs';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as path from "node:path";
 
 export class ImportServiceStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+    constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+        super(scope, id, props);
 
-    // The code that defines your stack goes here
+        const bucket = new s3.Bucket(this, 'ImportBucket', {
+            removalPolicy: cdk.RemovalPolicy.DESTROY,
+            autoDeleteObjects: true,
+            versioned: false,
+            blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+        })
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'ImportServiceQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
-  }
+        const importFileParserLambda = new lambda.Function(this, 'ImportFileParserLambda', {
+            runtime: lambda.Runtime.NODEJS_16_X,
+            handler: 'importFileParser.handler',
+            code: lambda.Code.fromAsset(path.join(__dirname, '../src/lambda')),
+            environment: {
+                BUCKET_NAME: bucket.bucketName,
+            },
+        });
+
+        bucket.grantPut(importFileParserLambda)
+
+
+    }
 }
