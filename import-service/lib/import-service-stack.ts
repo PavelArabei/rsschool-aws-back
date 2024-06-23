@@ -2,6 +2,8 @@ import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigw from 'aws-cdk-lib/aws-apigateway';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
 import { ImportBucket } from './constucts/bucket';
 
 export class ImportServiceStack extends cdk.Stack {
@@ -29,6 +31,14 @@ export class ImportServiceStack extends cdk.Stack {
     });
 
     bucket.grantReadWrite(importFileParserLambda);
+
+    bucket.addEventNotification(
+      s3.EventType.OBJECT_CREATED,
+      new s3n.LambdaDestination(importFileParserLambda),
+      {
+        prefix: 'uploaded/',
+      }
+    );
 
     const api = new apigw.RestApi(this, 'ImportApi', {
       restApiName: 'Import Service',
