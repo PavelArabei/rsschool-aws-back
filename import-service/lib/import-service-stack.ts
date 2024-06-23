@@ -10,25 +10,25 @@ export class ImportServiceStack extends cdk.Stack {
 
     const { bucket } = new ImportBucket(this, 'import-service-bucket');
 
+    const lambdaEnvironmentVariables = {
+      BUCKET_NAME: bucket.bucketName,
+    };
+
     const importProductsFileLambda = new lambda.Function(this, 'ImportProductsFileLambda', {
       runtime: lambda.Runtime.NODEJS_16_X,
       handler: 'importProductsFile.handler',
       code: lambda.Code.fromAsset('src/lambda'),
-      environment: {
-        BUCKET_NAME: bucket.bucketName,
-      },
+      environment: lambdaEnvironmentVariables,
     });
 
-    // const importFileParserLambda = new lambda.Function(this, 'ImportFileParserLambda', {
-    //   runtime: lambda.Runtime.NODEJS_16_X,
-    //   handler: 'importFileParser.handler',
-    //   code: lambda.Code.fromAsset('src/lambda'),
-    //   environment: {
-    //     BUCKET_NAME: bucket.bucketName,
-    //   },
-    // });
-    //
-    // bucket.grantPut(importFileParserLambda);
+    const importFileParserLambda = new lambda.Function(this, 'ImportFileParserLambda', {
+      runtime: lambda.Runtime.NODEJS_16_X,
+      handler: 'importFileParser.handler',
+      code: lambda.Code.fromAsset('src/lambda'),
+      environment: lambdaEnvironmentVariables,
+    });
+
+    bucket.grantReadWrite(importFileParserLambda);
 
     const api = new apigw.RestApi(this, 'ImportApi', {
       restApiName: 'Import Service',
