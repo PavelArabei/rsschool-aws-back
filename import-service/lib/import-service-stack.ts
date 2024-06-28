@@ -3,7 +3,6 @@ import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigw from 'aws-cdk-lib/aws-apigateway';
 import * as s3 from 'aws-cdk-lib/aws-s3';
-import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
 import { ImportBucket } from './constucts/bucket';
 
@@ -11,7 +10,7 @@ export class ImportServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const { bucket } = new ImportBucket(this, 'import-service-bucket');
+    const bucket = s3.Bucket.fromBucketName(this, 'ImportBucket', 'import-service-bucket-rs-school');
 
     const lambdaEnvironmentVariables = {
       BUCKET_NAME: bucket.bucketName,
@@ -31,21 +30,22 @@ export class ImportServiceStack extends cdk.Stack {
       environment: lambdaEnvironmentVariables,
     });
 
+    bucket.grantReadWrite(importProductsFileLambda);
     bucket.grantReadWrite(importFileParserLambda);
 
-    importFileParserLambda.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: ['s3:PutObject'],
-        resources: [`${bucket.bucketArn}/*`],
-      })
-    );
+    // importFileParserLambda.addToRolePolicy(
+    //   new iam.PolicyStatement({
+    //     actions: ['s3:PutObject'],
+    //     resources: [`${bucket.bucketArn}/*`],
+    //   })
+    // );
 
     bucket.addEventNotification(
       s3.EventType.OBJECT_CREATED,
       new s3n.LambdaDestination(importFileParserLambda),
       {
         prefix: 'uploaded/',
-      }
+      },
     );
 
     const api = new apigw.RestApi(this, 'ImportApi', {
