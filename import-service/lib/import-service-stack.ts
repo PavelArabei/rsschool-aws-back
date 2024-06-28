@@ -1,10 +1,9 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import * as lambda from 'aws-cdk-lib/aws-lambda';
-import * as apigw from 'aws-cdk-lib/aws-apigateway';
 import * as s3 from 'aws-cdk-lib/aws-s3';
-import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
-import { ImportBucket } from './constucts/bucket';
+import { ImportProductsFileClass } from './constucts/importProductsFileClass';
+import { ImportFileParsedClass } from './constucts/importFileParsedClass';
+import { APIGateWayClass } from './constucts/APIGateWayClass';
 
 export class ImportServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -12,26 +11,11 @@ export class ImportServiceStack extends cdk.Stack {
 
     const bucket = s3.Bucket.fromBucketName(this, 'ImportBucket', 'import-service-bucket-rs-school');
 
-    const lambdaEnvironmentVariables = {
-      BUCKET_NAME: bucket.bucketName,
-    };
+    const importProductsFileLambda = new ImportProductsFileClass(this, 'ImportProductsFileLambda', { bucket });
+    const importFileParserLambda = new ImportFileParsedClass(this, 'ImportFileParserLambda', { bucket });
 
-    const importProductsFileLambda = new lambda.Function(this, 'ImportProductsFileLambda', {
-      runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'importProductsFile.handler',
-      code: lambda.Code.fromAsset('src/lambda'),
-      environment: lambdaEnvironmentVariables,
-    });
+    new APIGateWayClass(this, 'ImportApi', { importProductsFileLambda: importProductsFileLambda.handler });
 
-    const importFileParserLambda = new lambda.Function(this, 'ImportFileParserLambda', {
-      runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'importFileParser.handler',
-      code: lambda.Code.fromAsset('src/lambda'),
-      environment: lambdaEnvironmentVariables,
-    });
-
-    bucket.grantReadWrite(importProductsFileLambda);
-    bucket.grantReadWrite(importFileParserLambda);
 
     // importFileParserLambda.addToRolePolicy(
     //   new iam.PolicyStatement({
@@ -39,21 +23,5 @@ export class ImportServiceStack extends cdk.Stack {
     //     resources: [`${bucket.bucketArn}/*`],
     //   })
     // );
-
-    bucket.addEventNotification(
-      s3.EventType.OBJECT_CREATED,
-      new s3n.LambdaDestination(importFileParserLambda),
-      {
-        prefix: 'uploaded/',
-      },
-    );
-
-    const api = new apigw.RestApi(this, 'ImportApi', {
-      restApiName: 'Import Service',
-      cloudWatchRole: true,
-    });
-
-    const importProducts = api.root.addResource('import');
-    importProducts.addMethod('GET', new apigw.LambdaIntegration(importProductsFileLambda));
   }
 }
