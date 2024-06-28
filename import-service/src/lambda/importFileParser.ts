@@ -28,8 +28,7 @@ export const handler: S3Handler = async (event: S3Event): Promise<void> => {
       const stream = getResponse.Body as Readable;
       await csvParser(stream);
 
-      const copyKey = key.replace('uploaded', 'parsed');
-      const copyResponse = await copyFile(bucketName, copyKey);
+      const copyResponse = await copyFile(bucketName, key);
       console.log('File has been copied:', copyResponse);
 
       await deleteFile(bucketName, key);
