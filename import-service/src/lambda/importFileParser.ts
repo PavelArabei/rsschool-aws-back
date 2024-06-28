@@ -1,8 +1,9 @@
 import * as AWS from 'aws-sdk';
+
 import { S3Event, S3Handler } from 'aws-lambda';
+import * as csv from 'csv-parser';
 
 const s3 = new AWS.S3();
-const csv = require('csv-parser');
 
 export const handler: S3Handler = async (event: S3Event): Promise<void> => {
   const bucketName = process.env.BUCKET_NAME!;
