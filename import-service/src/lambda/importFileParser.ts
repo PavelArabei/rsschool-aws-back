@@ -1,35 +1,46 @@
-import * as AWS from 'aws-sdk';
-
+// import * as AWS from 'aws-sdk';
 import { S3Event, S3Handler } from 'aws-lambda';
-import * as csv from 'csv-parser';
+import { Readable } from 'node:stream';
+import { csvParser } from './helpers/csv-parser';
+import { copyFile, deleteFile, getFile } from './helpers/s3-command';
 
-const s3 = new AWS.S3();
 
 export const handler: S3Handler = async (event: S3Event): Promise<void> => {
   const bucketName = process.env.BUCKET_NAME!;
 
   for (const record of event.Records) {
-    const params = {
-      Bucket: bucketName,
-      Key: record.s3.object.key,
-    };
 
-    const s3Stream = s3.getObject(params).createReadStream();
+    const key = record.s3.object.key;
 
-    s3Stream
-      .pipe(csv())
-      .on('data', (data: string) => {
-        console.log(data);
-      })
-      .on('end', async () => {
-        const copyParams = {
-          Bucket: bucketName,
-          CopySource: `${bucketName}/${record.s3.object.key}`,
-          Key: record.s3.object.key.replace('uploaded/', 'parsed/'),
-        };
+    console.log('Bucket:', bucketName);
+    console.log('Object key:', key);
 
-        await s3.copyObject(copyParams).promise();
-        await s3.deleteObject(params).promise();
-      });
+
+    try {
+
+      const getResponse = await getFile(bucketName, key);
+      console.log(getResponse);
+
+      if (!getResponse.Body) {
+        throw new Error('Empty body');
+      }
+
+      const stream = getResponse.Body as Readable;
+      await csvParser(stream);
+
+      const copyKey = key.replace('uploaded', 'parsed');
+      const copyResponse = await copyFile(bucketName, copyKey);
+      console.log('File has been copied:', copyResponse);
+
+      await deleteFile(bucketName, key);
+      console.log('File has been deleted');
+
+      console.log(`file ${key} has been parsed`);
+
+
+    } catch (err) {
+      console.log('Error from s3', err);
+    }
+
   }
 };
