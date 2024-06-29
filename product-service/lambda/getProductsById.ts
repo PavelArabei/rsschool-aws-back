@@ -1,18 +1,59 @@
 import {APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult} from 'aws-lambda';
-import {Products} from "../types/products";
-import {buildResponse, success} from "./helpers/response";
+import {DynamoDB} from 'aws-sdk';
+
+import {buildResponse, failure, success} from "./helpers/response";
+
+const AWS = require('aws-sdk');
+
+const {PRODUCTS_TABLE, STOCK_TABLE} = process.env
+const dynamoDb: DynamoDB.DocumentClient = new AWS.DynamoDB.DocumentClient();
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const productId = event.pathParameters?.productId;
+    console.log('productId', productId)
+
     if (!productId) {
         return buildResponse(400, {message: "Product ID is required"})
     }
 
-    const products: Products[] = JSON.parse(process.env.PRODUCTS || '[]');
-    const product = products.find(p => p.id === productId);
+    const paramsForProducts = {
+        TableName: PRODUCTS_TABLE!,
+        KeyConditionExpression: 'id = :id',
+        ExpressionAttributeValues: {
+            ':id': productId,
+        },
+    }
 
-    if (product) return success(product)
+    const paramsForStocks = {
+        TableName: STOCK_TABLE!,
+        KeyConditionExpression: 'product_id = :product_id',
+        ExpressionAttributeValues: {
+            ':product_id': productId,
+        },
+    }
 
-    return buildResponse(404, {message: "Product not found"})
+    try {
+        const [productResult, stockResult] = await Promise.all([
+            dynamoDb.query(paramsForProducts).promise(),
+            dynamoDb.query(paramsForStocks).promise()
+        ]);
 
+        if (!productResult.Items?.length || !stockResult.Items?.length) {
+            console.error('Product or stocks not found');
+            return buildResponse(404, {message: "Product or stock not found"})
+        }
+
+        const product = productResult.Items[0];
+        const stock = stockResult.Items[0];
+
+        const productWithStock = {
+            ...product,
+            count: stock.count
+        }
+        return success(productWithStock)
+
+    } catch (error: any) {
+        console.error('Error retrieving product:', error);
+        return failure({error: 'Failed to retrieve product: ' + error.message})
+    }
 };

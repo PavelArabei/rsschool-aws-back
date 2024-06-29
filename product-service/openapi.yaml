@@ -28,6 +28,67 @@ paths:
                       type: number
         '500':
           description: Internal server error
+    post:
+      summary: Create a product
+      description: Create a new product and its stock in the database
+      requestBody:
+        description: Product parameters without an ID
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: Product title
+                  example: Guitar
+                description:
+                  type: string
+                  description: Product description
+                  example: The best guitar in th world
+                price:
+                  type: number
+                  description: Product price
+                  example: 1000
+                count:
+                  type: integer
+                  description: Number of products in stock
+              required:
+                - title
+                - description
+                - price
+      responses:
+        '201':
+          description: Product successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Unique identifier of the created product
+        '400':
+          description: Bad request (missing required fields)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message
   /products/{productId}:
     get:
       summary: Get product by ID
