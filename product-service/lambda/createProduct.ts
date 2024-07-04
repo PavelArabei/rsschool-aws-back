@@ -1,14 +1,9 @@
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda';
-import * as AWS from 'aws-sdk';
-import { DynamoDB } from 'aws-sdk';
 
 import { buildResponse, failure } from './helpers/response';
-import { ProductWithoutId } from '../types/products';
+import { ProductWithoutId } from '../types/product';
+import { createProduct } from './helpers/dynamoDBCommands';
 
-import { uuid } from 'uuidv4';
-
-const { PRODUCTS_TABLE, STOCK_TABLE } = process.env;
-const dynamoDb: DynamoDB.DocumentClient = new AWS.DynamoDB.DocumentClient();
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
 
@@ -21,35 +16,13 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     return buildResponse(400, { message: 'Title, description and price are required' }, ['POST']);
   }
 
-  const id = uuid();
 
   try {
 
-    await dynamoDb.transactWrite({
-      TransactItems: [
-        {
-          Put: {
-            TableName: PRODUCTS_TABLE!,
-            Item: {
-              id,
-              title,
-              description,
-              price,
-            },
-          },
-        },
-        {
-          Put: {
-            TableName: STOCK_TABLE!,
-            Item: {
-              product_id: id,
-              count: count || 1,
-            },
-          },
-        }],
-    }).promise();
+    const { id } = await createProduct({ title, description, price, count });
 
     return buildResponse(201, { id }, ['POST']);
+
   } catch (error) {
 
     console.error('Error retrieving product:', error);
