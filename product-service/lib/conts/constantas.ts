@@ -1,0 +1,2 @@
+export const PRODUCTS_TABLE_NAME = 'PRODUCTS_TABLE';
+export const STOCKS_TABLE_NAME = 'STOCK_TABLE';
