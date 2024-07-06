@@ -283,4 +283,6 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+*.d.ts
+*.js
 
