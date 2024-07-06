@@ -39,6 +39,7 @@ export class ProductServiceStack extends cdk.Stack {
         getProductsListLambda,
         getProductByIdLambda,
         createProductLambda,
+        catalogBatchProcessLambda,
       });
 
 
