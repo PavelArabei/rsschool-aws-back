@@ -4,6 +4,7 @@ import { DynamoDBTablesConstruct } from './constructs/dynamoDBTables.construct';
 import { LambdasInteractionWithDBConstruct } from './constructs/lambdasInteractionWithDB.construct';
 import { ApiGWConstructs } from './constructs/apiGW.constructs';
 import { CatalogQueueConstruct } from './constructs/catalogQueue.construct';
+import { SnsTopicConstruct } from './constructs/snsTopic.construct';
 
 export class ProductServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -11,7 +12,7 @@ export class ProductServiceStack extends cdk.Stack {
 
 
     const { catalogItemsQueue } = new CatalogQueueConstruct(this, 'CatalogQueueConstruct');
-
+    const { createProductTopic } = new SnsTopicConstruct(this, 'SnsTopicConstruct');
 
     const { getProductsListLambda, getProductByIdLambda, createProductLambda } =
       new LambdasInteractionWithDBConstruct(this, 'LambdasInteractionWithDBConstruct', { SQS_URL: catalogItemsQueue.queueUrl });
