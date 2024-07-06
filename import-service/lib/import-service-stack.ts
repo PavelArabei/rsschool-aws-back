@@ -4,6 +4,7 @@ import { ImportProductsFileClass } from './constucts/importProductsFileClass';
 import { ImportFileParsedClass } from './constucts/importFileParsedClass';
 import { APIGateWayClass } from './constucts/APIGateWayClass';
 import { ImportBucketClass } from './constucts/importBucketClass';
+import { ProductsQueueConstruct } from './constucts/productsQueue.construct';
 
 export class ImportServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -11,11 +12,17 @@ export class ImportServiceStack extends cdk.Stack {
 
     const { bucket } = new ImportBucketClass(this, 'ImportProductsBucket');
 
-    const importProductsFileLambda = new ImportProductsFileClass(this, 'ImportProductsFileLambda', { bucket });
+    const { catalogItemsQueue } = new ProductsQueueConstruct(this, 'ProductsQueue');
+
+
+    const importProductsFileLambda = new ImportProductsFileClass(this, 'ImportProductsFileLambda', {
+      bucket,
+      catalogItemsQueue,
+    });
 
     new ImportFileParsedClass(this, 'ImportFileParserLambda', { bucket });
 
     new APIGateWayClass(this, 'ImportApi', { importProductsFileLambda: importProductsFileLambda.handler });
-    
+
   }
 }
