@@ -8,6 +8,12 @@ export const publishSNS = async ({ title, price, description, count, id }: Produ
   const publishCommand = new PublishCommand({
     TopicArn: process.env.SNS_ARN || '',
     Message: message,
+    MessageAttributes: {
+      price: {
+        DataType: 'Number',
+        StringValue: price.toString(),
+      },
+    },
   });
 
   await snsClient.send(publishCommand);
