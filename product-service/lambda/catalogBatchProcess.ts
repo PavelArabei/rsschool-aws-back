@@ -14,7 +14,7 @@ export const handler = async (event: SQSEvent) => {
 
     try {
 
-      if (isProductHasCorrectFields(product)) {
+      if (!isProductHasCorrectFields(product)) {
         throw new Error('Product has incorrect fields');
       }
 
