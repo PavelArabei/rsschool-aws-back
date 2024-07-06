@@ -3,14 +3,18 @@ import { Construct } from 'constructs';
 import { DynamoDBTablesConstruct } from './constructs/dynamoDBTables.construct';
 import { LambdasInteractionWithDBConstruct } from './constructs/lambdasInteractionWithDB.construct';
 import { ApiGWConstructs } from './constructs/apiGW.constructs';
+import { CatalogQueueConstruct } from './constructs/catalogQueue.construct';
 
 export class ProductServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
 
+    const { catalogItemsQueue } = new CatalogQueueConstruct(this, 'CatalogQueueConstruct');
+
+
     const { getProductsListLambda, getProductByIdLambda, createProductLambda } =
-      new LambdasInteractionWithDBConstruct(this, 'LambdasInteractionWithDBConstruct');
+      new LambdasInteractionWithDBConstruct(this, 'LambdasInteractionWithDBConstruct', { SQS_URL: catalogItemsQueue.queueUrl });
 
 
     new DynamoDBTablesConstruct(this, 'DynamoDBTablesConstruct',
