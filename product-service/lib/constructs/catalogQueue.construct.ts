@@ -11,7 +11,7 @@ export class CatalogQueueConstruct extends Construct {
     super(scope, id);
 
     this.catalogItemsQueue = new sqs.Queue(this, 'CatalogItemsQueue', {
-      queueName: 'catalogItemsQueue',
+      queueName: 'catalogItemsQueueProducts',
     });
 
     new cdk.CfnOutput(this, 'CatalogItemsQueueUrl', {
