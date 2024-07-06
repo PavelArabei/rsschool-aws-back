@@ -17,10 +17,9 @@ export class ImportServiceStack extends cdk.Stack {
 
     const importProductsFileLambda = new ImportProductsFileClass(this, 'ImportProductsFileLambda', {
       bucket,
-      catalogItemsQueue,
     });
 
-    new ImportFileParsedClass(this, 'ImportFileParserLambda', { bucket });
+    new ImportFileParsedClass(this, 'ImportFileParserLambda', { bucket, catalogItemsQueue });
 
     new APIGateWayClass(this, 'ImportApi', { importProductsFileLambda: importProductsFileLambda.handler });
 

@@ -9,7 +9,7 @@ export class ProductsQueueConstruct extends Construct {
 
   constructor(scope: Construct, id: string) {
     super(scope, id);
-
+    
     const catalogItemsQueueUrl = cdk.Fn.importValue(CATALOG_ITEMS_QUEUE_ARN);
     this.catalogItemsQueue = sqs.Queue.fromQueueArn(this, 'catalogItemsQueue', catalogItemsQueueUrl);
   }
