@@ -14,7 +14,7 @@ export const docClient = DynamoDBDocumentClient.from(client);
 const productsTableName = process.env.PRODUCTS_TABLE ?? 'PRODUCTS_TABLE';
 const stocksTableName = process.env.STOCK_TABLE ?? 'STOCK_TABLE';
 
-export const createProduct = async (product: ProductWithoutId): Promise<Product> => {
+export const createProduct = async (product: ProductWithoutId): Promise<Product & { count: number }> => {
 
   const id = uuidv4();
   const { title, description, price, count } = product;
@@ -49,6 +49,7 @@ export const createProduct = async (product: ProductWithoutId): Promise<Product>
   return {
     id,
     ...product,
+    count: count || 1,
   };
 };
 
