@@ -36,7 +36,7 @@ export const handler: S3Handler = async (event: S3Event): Promise<void> => {
       console.log('File has been deleted');
 
       console.log(`file ${key} has been parsed`);
-      
+
       await lambdaNotification(products);
 
     } catch (err) {

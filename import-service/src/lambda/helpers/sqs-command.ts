@@ -5,6 +5,9 @@ const sqsClient = new SQSClient({});
 
 export const lambdaNotification = async (products: Product[]): Promise<void> => {
 
+
+  console.log(`SQS_URL: ${process.env.SQS_URL}`);
+
   const msgCommand = new SendMessageCommand({
     QueueUrl: process.env.SQS_URL,
     MessageBody: JSON.stringify(products),
