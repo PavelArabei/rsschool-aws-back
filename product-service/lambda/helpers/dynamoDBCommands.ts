@@ -18,6 +18,8 @@ export const createProduct = async (product: ProductWithoutId): Promise<Product 
 
   const id = uuidv4();
   const { title, description, price, count } = product;
+  const numericCount = Number(count) || 1;
+  const numericPrice = Number(price);
 
   const command = new TransactWriteCommand({
     TransactItems: [
@@ -28,7 +30,7 @@ export const createProduct = async (product: ProductWithoutId): Promise<Product 
             id,
             title,
             description,
-            price,
+            price: numericPrice,
           },
         },
       },
@@ -37,7 +39,7 @@ export const createProduct = async (product: ProductWithoutId): Promise<Product 
           TableName: stocksTableName,
           Item: {
             product_id: id,
-            count: count || 1,
+            count: numericCount,
           },
         },
       }],
