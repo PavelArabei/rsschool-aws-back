@@ -1,2 +1,2 @@
-export const CATALOG_ITEMS_QUEUE_URL = 'CatalogItemsQueueUrl';
+export const CATALOG_ITEMS_QUEUE_ARN = 'CatalogItemsQueueUrl';
 

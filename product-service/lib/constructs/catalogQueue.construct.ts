@@ -2,7 +2,7 @@ import { Construct } from 'constructs';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { IQueue } from 'aws-cdk-lib/aws-sqs';
 import * as cdk from 'aws-cdk-lib';
-import { CATALOG_ITEMS_QUEUE_URL } from '../../../constants';
+import { CATALOG_ITEMS_QUEUE_ARN } from '../../../constants';
 
 export class CatalogQueueConstruct extends Construct {
   catalogItemsQueue: IQueue;
@@ -15,8 +15,8 @@ export class CatalogQueueConstruct extends Construct {
     });
 
     new cdk.CfnOutput(this, 'CatalogItemsQueueUrl', {
-      value: this.catalogItemsQueue.queueUrl,
-      exportName: CATALOG_ITEMS_QUEUE_URL,
+      value: this.catalogItemsQueue.queueArn,
+      exportName: CATALOG_ITEMS_QUEUE_ARN,
     });
 
 
