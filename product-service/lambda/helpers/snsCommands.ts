@@ -2,6 +2,7 @@ import { Product } from '../../types/product';
 import { PublishCommand, SNSClient } from '@aws-sdk/client-sns';
 
 const snsClient = new SNSClient({});
+
 export const publishSNS = async ({ title, price, description, count, id }: Product & { count: number }) => {
   const message = `Product created: ${title} (price: ${price}, description: ${description}, count: ${count || 1})`;
 
