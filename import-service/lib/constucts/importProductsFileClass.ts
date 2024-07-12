@@ -1,5 +1,6 @@
 import { Construct } from 'constructs';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 
 interface ImportProductsFileClassProps {
@@ -11,6 +12,7 @@ export class ImportProductsFileClass extends Construct {
 
   constructor(scope: Construct, id: string, { bucket }: ImportProductsFileClassProps) {
     super(scope, id);
+
 
     this.handler = new lambda.Function(this, id, {
       runtime: lambda.Runtime.NODEJS_20_X,

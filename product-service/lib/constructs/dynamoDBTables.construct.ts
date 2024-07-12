@@ -8,6 +8,7 @@ interface DynamoDBTablesProps {
   getProductsListLambda: IFunction;
   getProductByIdLambda: IFunction;
   createProductLambda: IFunction;
+  catalogBatchProcessLambda: IFunction;
 }
 
 export class DynamoDBTablesConstruct extends Construct {
@@ -18,6 +19,7 @@ export class DynamoDBTablesConstruct extends Construct {
     getProductsListLambda,
     getProductByIdLambda,
     createProductLambda,
+    catalogBatchProcessLambda,
   }: DynamoDBTablesProps) {
     super(scope, id);
 
@@ -47,6 +49,7 @@ export class DynamoDBTablesConstruct extends Construct {
     this.productsTable.grant(getProductByIdLambda, 'dynamodb:BatchGetItem');
     this.stockTable.grant(getProductByIdLambda, 'dynamodb:BatchGetItem');
 
-
+    this.productsTable.grant(catalogBatchProcessLambda, 'dynamodb:PutItem');
+    this.stockTable.grant(catalogBatchProcessLambda, 'dynamodb:PutItem');
   }
 }

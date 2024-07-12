@@ -3,6 +3,7 @@ import { S3Event, S3Handler } from 'aws-lambda';
 import { Readable } from 'node:stream';
 import { csvParser } from './helpers/csv-parser';
 import { copyFile, deleteFile, getFile } from './helpers/s3-command';
+import { lambdaNotification } from './helpers/sqs-command';
 
 
 export const handler: S3Handler = async (event: S3Event): Promise<void> => {
@@ -26,7 +27,7 @@ export const handler: S3Handler = async (event: S3Event): Promise<void> => {
       }
 
       const stream = getResponse.Body as Readable;
-      await csvParser(stream);
+      const products = await csvParser(stream);
 
       const copyResponse = await copyFile(bucketName, key);
       console.log('File has been copied:', copyResponse);
@@ -36,6 +37,7 @@ export const handler: S3Handler = async (event: S3Event): Promise<void> => {
 
       console.log(`file ${key} has been parsed`);
 
+      await lambdaNotification(products);
 
     } catch (err) {
       console.log('Error from s3', err);

@@ -3,7 +3,7 @@ info:
   title: Product Service API
   version: 1.0.0
 servers:
-  - url: https://qdnnjt6el2.execute-api.eu-west-1.amazonaws.com/prod/
+  - url: https://zvpee75h36.execute-api.eu-west-1.amazonaws.com/prod
 paths:
   /products:
     get:
