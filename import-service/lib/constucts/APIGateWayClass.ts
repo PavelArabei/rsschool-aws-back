@@ -45,13 +45,13 @@ export class APIGateWayClass extends Construct {
 
 
     api.addGatewayResponse('GatewayResponseUnauthorized', {
-      type: cdk.aws_apigateway.ResponseType.UNAUTHORIZED,
+      type: apigw.ResponseType.UNAUTHORIZED,
       responseHeaders,
       statusCode: '401',
     });
 
     api.addGatewayResponse('GatewayResponseAccessDenied', {
-      type: cdk.aws_apigateway.ResponseType.ACCESS_DENIED,
+      type: apigw.ResponseType.ACCESS_DENIED,
       responseHeaders,
       statusCode: '403',
     });
